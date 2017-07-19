@@ -1,0 +1,99 @@
+
+///////////////////////////////////////////////////////////
+// Importe dans la feuille active tous les users avec UO et date de dernière connexion donnée
+
+function import_users_domain_with_UOfilter(){
+  var values = []
+  var users = []
+  var userListQuery = {}
+  var nextPageToken = ''
+  var listObject = {
+          domain:'st-do.fr',
+          maxResults: 500,
+            query: "orgUnitPath=/GADS/StDo/Classes/2016-2017"
+            //query: ""orgUnitPath=/GADS/StDo/Classes/2/2de7"
+
+      }
+  var i = 0
+      //spreadsheetID = '1JLDD2wm0_udmTn9ZHvdKhL_Ok3SvKYFqkBeiA1GdnYc';
+
+  do {
+
+    if (nextPageToken && nextPageToken !== '') {
+      listObject.pageToken = nextPageToken;
+    }  
+
+    userListQuery = AdminDirectory.Users.list(listObject);
+
+    // if there are more users than fit in the query a nextPageToken is returned
+    nextPageToken = userListQuery.nextPageToken;
+
+    // Add the query results to the users array
+    users = users.concat(userListQuery.users);
+
+  } while (nextPageToken);
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  for (i = 0; i < users.length; i += 1) {
+    sheet.getRange(i+2,1).setValue(users[i].name.fullName);
+    sheet.getRange(i+2,2).setValue(users[i].primaryEmail);
+    sheet.getRange(i+2,3).setValue(users[i].orgUnitPath.split("/")[6]);
+    sheet.getRange(i+2,5).setValue(users[i].suspended);
+
+        
+    
+    if(typeof(users[i].thumbnailPhotoUrl) !== "undefined"){
+    //sheet.setRowHeight(i+2, 60);
+    //var formul = "=IMAGE(\""+users[i].thumbnailPhotoUrl+ "\";1)";
+    //sheet.getRange(i+2,3).setFormulaR1C1(formul);
+    
+    }
+    //sheet.getRange(i+2,6).setValue(users[i].thumbnailPhotoUrl);
+    
+    if(users[i].lastLoginTime != '1970-01-01T00:00:00.000Z'){
+    sheet.getRange(i+2,4).setValue(users[i].lastLoginTime);
+    }
+    //values.push([users[i].name.fullName, users[i].primaryEmail, users[i].lastLoginTime, users[i].thumbnailPhotoUrl]);   
+  }
+
+  //SpreadsheetApp.openById(spreadsheetID).getSheets()[0].getRange(1, 1, values.length, values[0].length).setValues(values);
+
+  //sheet.getRange(1, 1, values.length, values[0].length).setValues(values);
+}
+
+//----------------------------------------------------------------------------------
+function updateGmailPhotoFromDrive() {
+  
+  try {
+    
+    var userEmail = 'amit@labnol.org';
+    var fileName  = userEmail + ".jpg";
+    
+    var blob = DriveApp.getFilesByName(fileName).next().getBlob();
+    var data = Utilities.base64EncodeWebSafe(blob.getBytes());
+    
+    AdminDirectory.Users.Photos.update({photoData: data}, userEmail);
+    
+  }
+  
+  catch (err) {
+    Logger.log(err.toString());
+  }
+  
+}
+
+  ///////////////////////////////////////////////////////////
+
+function listGroupMembers() {
+     var group = GroupsApp.getGroupByEmail("classe_1es1@st-do.fr");
+     var s = group.getEmail() + ': ';
+     var users = group.getUsers();
+     for (var i = 0; i < users.length; i++) {
+       var user = users[i];
+       s = s + user.getEmail() + ", ";
+     }
+     Logger.log(s);
+   }
+  ///////////////////////////////////////////////////////////
+   
