@@ -36,6 +36,8 @@ function import_users_domain_with_UOfilter(){
     sheet.getRange(i+2,1).setValue(users[i].name.fullName);
     sheet.getRange(i+2,2).setValue(users[i].primaryEmail);
     sheet.getRange(i+2,3).setValue(users[i].orgUnitPath.split("/")[6]);
+    // Arborescence UO de classes type /GADS/StDo/Classes/2016-2017/Classes de cinquieme/5b
+
     sheet.getRange(i+2,5).setValue(users[i].suspended);
 
         
